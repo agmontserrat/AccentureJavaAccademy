@@ -18,6 +18,7 @@ public class Player {
     @GenericGenerator(name = "native", strategy = "native")
     private long id;
     private String userName;
+    private String password;
 
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "player")
     private Set<GamePlayer> gamePlayers = new HashSet<>();
@@ -27,8 +28,9 @@ public class Player {
 
     public Player() { }
 
-    public Player(String userName) {
+    public Player(String userName, String password) {
         this.userName = userName;
+        this.password = password;
     }
 
     @JsonIgnore
