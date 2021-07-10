@@ -1,10 +1,27 @@
 package com.codeoftheweb.salvo;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.authentication.configuration.GlobalAuthenticationConfigurerAdapter;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.core.authority.AuthorityUtils;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.WebAttributes;
+import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.util.*;
 
 @SpringBootApplication
@@ -13,6 +30,11 @@ public class SalvoApplication {
 	public static void main(String[] args) {
 
 		SpringApplication.run(SalvoApplication.class, args);
+	}
+
+	@Bean
+	public PasswordEncoder passwordEncoder() {
+		return PasswordEncoderFactories.createDelegatingPasswordEncoder();
 	}
 
 	@Bean
@@ -30,10 +52,10 @@ public class SalvoApplication {
 			g_repository.save(game3);
 
 			//PLAYER
-			Player player1 = (new Player("j.bauer@ctu.gov", "24"));
-			Player player2 = new Player("c.obrian@ctu.gov", "42");
-			Player player3 = new Player("c.kim_bauer@gmail.com", "kb");
-			Player player4 = new Player("t.almeida@ctu.gov", "mole");
+			Player player1 = (new Player("j.bauer@ctu.gov", passwordEncoder().encode("24")));
+			Player player2 = new Player("c.obrian@ctu.gov", passwordEncoder().encode("42"));
+			Player player3 = new Player("c.kim_bauer@gmail.com", passwordEncoder().encode("kb"));
+			Player player4 = new Player("t.almeida@ctu.gov", passwordEncoder().encode("mole"));
 			p_repository.save(player1);
 			p_repository.save(player2);
 			p_repository.save(player3);
@@ -88,13 +110,82 @@ public class SalvoApplication {
 			//SCORE
 			Score sc1 = new Score(game1, player1, 1, Date.from(game1.getCreationDate().toInstant().plusSeconds(3600)));
 			Score sc2 = new Score(game1, player2, 0, Date.from(game1.getCreationDate().toInstant().plusSeconds(3600)));
-			//Score sc3 = new Score(game2, player3, 0.5, Date.from(game2.getCreationDate().toInstant().plusSeconds(3600)));
-			//Score sc4 = new Score(game2, player4, 0.5, Date.from(game2.getCreationDate().toInstant().plusSeconds(3600)));
+			Score sc3 = new Score(game2, player3, 0.5, Date.from(game2.getCreationDate().toInstant().plusSeconds(3600)));
+			Score sc4 = new Score(game2, player4, 0.5, Date.from(game2.getCreationDate().toInstant().plusSeconds(3600)));
 			scRepository.save(sc1);
 			scRepository.save(sc2);
-			//scRepository.save(sc3);
-			//scRepository.save(sc4);
+			scRepository.save(sc3);
+			scRepository.save(sc4);
 
 		};
 	}
+}
+
+// ---------------------AUTENTICACIÓN
+@Configuration
+class WebSecurityConfiguration extends GlobalAuthenticationConfigurerAdapter {
+	@Autowired
+	PlayerRepository pRepository;
+
+	@Override
+	public void init(AuthenticationManagerBuilder auth) throws Exception {
+		auth.userDetailsService(inputName-> {
+			Player player = pRepository.findByUserName(inputName);
+			if (player != null) {
+				return new User(player.getUserName(), player.getPassword(),
+						AuthorityUtils.createAuthorityList("USER"));
+			} else {
+				throw new UsernameNotFoundException("Unknown user: " + inputName);
+			}
+		});
+	}
+}
+
+// ------------------RUTAS
+@Configuration
+@EnableWebSecurity
+class WebSecurityConfig extends WebSecurityConfigurerAdapter {
+	@Autowired
+	private PlayerRepository playerRepository;
+	@Autowired
+	private PasswordEncoder passwordEncoder;
+
+	@Override
+	protected void configure(HttpSecurity http) throws Exception {
+		http.authorizeRequests()
+				.antMatchers("/web/game.html", "/api/game_view/**", "/h2-console/**", "/rest/**").hasAuthority("USER")
+				.antMatchers("/**").permitAll();
+
+		http
+				.formLogin()
+				.usernameParameter("name")
+				.passwordParameter("pwd")
+				.loginPage("/api/login");
+
+		http.logout().logoutUrl("/api/logout");
+
+		http.headers().frameOptions().disable();
+
+
+		http.csrf().disable();
+
+		// turn off checking for CSRF tokens
+		http.csrf().disable();
+		// if user is not authenticated, just send an authentication failure response
+		http.exceptionHandling().authenticationEntryPoint((req, res, exc) -> res.sendError(HttpServletResponse.SC_UNAUTHORIZED));
+		// if login is successful, just clear the flags asking for authentication
+		http.formLogin().successHandler((req, res, auth) -> clearAuthenticationAttributes(req));
+		// if login fails, just send an authentication failure response
+		http.formLogin().failureHandler((req, res, exc) -> res.sendError(HttpServletResponse.SC_UNAUTHORIZED));
+		// if logout is successful, just send a success response
+		http.logout().logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler());
+
+	}
+	private void clearAuthenticationAttributes(HttpServletRequest request) {
+		HttpSession session = request.getSession(false);
+		if (session != null) {
+			session.removeAttribute(WebAttributes.AUTHENTICATION_EXCEPTION);
+		}
+	}
+
 }

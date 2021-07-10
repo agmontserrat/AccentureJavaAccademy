@@ -50,6 +50,14 @@ public class Player {
         this.userName = userName;
     }
 
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
     public Set<GamePlayer> getGamePlayers() {
         return gamePlayers;
     }
