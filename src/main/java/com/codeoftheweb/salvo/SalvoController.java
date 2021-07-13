@@ -9,6 +9,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toSet;
 
@@ -32,21 +33,9 @@ public class SalvoController {
         if (authenticatedPlayer == null)
             dto.put("player", "Guest");
         else
-            dto.put("player", authenticatedPlayerDTO(authenticatedPlayer));
-        dto.put("games", getGames());
+            dto.put("player", playerDTO(authenticatedPlayer));
+        dto.put("games", g_repo.findAll().stream().map(this::gameDTO).collect(toSet()));
         return dto;
-    }
-
-    private Map<String, Object> authenticatedPlayerDTO(Player player) {
-        Map<String, Object> dto = new LinkedHashMap<String, Object>();
-        dto.put("id", player.getId());
-        dto.put("email", player.getUserName());
-        return dto;
-    }
-
-    //----------GET GAMES
-    public Set<Map<String, Object>> getGames() {
-        return g_repo.findAll().stream().map(this::gameDTO).collect(toSet());
     }
 
     private Player getPlayer(Authentication authentication) {
@@ -63,6 +52,7 @@ public class SalvoController {
         Map<String, Object> dto = new LinkedHashMap<String, Object>();
         dto.put("id", game.getId());
         dto.put("created", game.getCreationDate());
+        dto.put("gameState", "PLACESHIPS");
         dto.put("gamePlayers", game.getGamePlayers().stream().map(this::gamePlayerDTO).collect(toSet()));
         dto.put("scores", game.getGamePlayers().stream().map(this::scoresDTO).collect(toSet()));
         return dto;
@@ -113,13 +103,43 @@ public class SalvoController {
     }
 
     //---------------Game View DTO-----------------
-    @RequestMapping("/game_view/{gamePlayerId}")
-    public Map<String, Object> gameView(@PathVariable Long gamePlayerId) {
-        GamePlayer gamePlayer = gp_repo.findById(gamePlayerId).get();
+    @RequestMapping("/game_view/{id}")
+    public ResponseEntity<Map<String, Object>> getGameView(@PathVariable long id, Authentication authentication) {
+        Player authenticatedPlayer = getPlayer(authentication);
+        GamePlayer gamePlayer = gp_repo.findById(id).orElse(null);
+        Game game = gamePlayer.getGame();
+
+        if (authenticatedPlayer == null){
+            return new ResponseEntity<>(makeMap("error","No logged player"), HttpStatus.FORBIDDEN);
+        }
+
+        if (gamePlayer.getPlayer().getId() != authenticatedPlayer.getId()){
+            return new ResponseEntity<>(makeMap("error","Unauthorized"), HttpStatus.UNAUTHORIZED);
+        }
+        return new ResponseEntity<>(gameViewDTO(gamePlayer), HttpStatus.OK);
+    }
+
+    private Map<String,Object> hitsDTO (GamePlayer gamePlayer){
         Map<String, Object> dto = new LinkedHashMap<String, Object>();
-        dto = gameDTO(gamePlayer.getGame());
+        dto.put("self", new ArrayList<>());
+        dto.put("oponent", new ArrayList<>());
+        return dto;
+    }
+
+    public Map<String, Object> gameViewDTO(GamePlayer gamePlayer) {
+        Map<String, Object> dto = new LinkedHashMap<String, Object>();
+        //dto = gameDTO(gamePlayer.getGame());
+        Game game = gamePlayer.getGame();
+
+        dto.put("id", game.getId());
+        dto.put("created", game.getCreationDate());
+        dto.put("gameState", "PLACESHIPS");
+        dto.put("gamePlayers", game.getGamePlayers().stream().map(this::gamePlayerDTO).collect(toSet()));
+
+
         dto.put("ships", gamePlayer.getShips().stream().map(this::shipsDTO).collect(toSet()));
         dto.put("salvoes", gamePlayer.getGame().getGamePlayers().stream().flatMap(gp -> gp.getSalvoes().stream().map(this::salvoesDTO)).collect(toSet()));
+        dto.put("hits", hitsDTO(gamePlayer));
         return dto;
     }
 
@@ -140,5 +160,49 @@ public class SalvoController {
         Map<String, Object> map = new HashMap<>();
         map.put(key, value);
         return map;
+    }
+
+    //---------------NEW GAME
+    @PostMapping("/games")
+    public ResponseEntity<Map<String, Object>> createGame(Authentication authentication) {
+        Player authenticatedPlayer = getPlayer(authentication);
+
+        if (authenticatedPlayer == null){
+            return new ResponseEntity<>(makeMap("error","No logged player"), HttpStatus.UNAUTHORIZED);
+        }
+
+        Game game = new Game();
+        GamePlayer gamePlayer = new GamePlayer(new Date(),game, authenticatedPlayer);
+
+        g_repo.save(game);
+        gp_repo.save(gamePlayer);
+        return new ResponseEntity<>(makeMap("gpid", gamePlayer.getId()), HttpStatus.CREATED);
+    }
+
+    //-------- JOIN GAME
+
+    @PostMapping("/game/{gameID}/players")
+    public ResponseEntity<Map<String, Object>> joinGame(@PathVariable Long gameID, Authentication authentication) {
+        //if user exists
+        Player authenticatedPlayer = getPlayer(authentication);
+        if (authenticatedPlayer == null){
+            return new ResponseEntity<>(makeMap("error","No logged player"), HttpStatus.UNAUTHORIZED);
+        }
+
+        // if game exists
+        Game game = g_repo.findById(gameID).orElse(null);
+        if (game == null) {
+            return new ResponseEntity<>(makeMap("error", "No such game"), HttpStatus.FORBIDDEN);
+        }
+
+        // if game is full
+        if (game.getGamePlayers().size() > 1){
+            return new ResponseEntity<>(makeMap("error", "Game is full"), HttpStatus.FORBIDDEN);
+        }
+
+        Date now = new Date();
+        GamePlayer gamePlayer = new GamePlayer(now, game, authenticatedPlayer);
+        gp_repo.save(gamePlayer);
+        return new ResponseEntity<>(makeMap("gpid", gamePlayer.getId()), HttpStatus.CREATED);
     }
 }
