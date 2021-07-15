@@ -1,5 +1,7 @@
 package com.codeoftheweb.salvo;
 
+import com.codeoftheweb.salvo.models.*;
+import com.codeoftheweb.salvo.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -153,7 +155,7 @@ class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 		http.authorizeRequests()
-				.antMatchers("/web/game.html", "/api/game_view/**", "/h2-console/**", "/rest/**").hasAuthority("USER")
+				.antMatchers("/web/game.html", "/api/game_view/**", "/rest/**").hasAuthority("USER")
 				.antMatchers("/**").permitAll();
 
 		http
