@@ -1,26 +1,15 @@
 package com.codeoftheweb.salvo.dtos;
 
-import com.codeoftheweb.salvo.models.GamePlayer;
 import com.codeoftheweb.salvo.models.Player;
-import com.codeoftheweb.salvo.models.Score;
-
-import java.util.HashSet;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 public class PlayerDTO {
     private long id;
-    private String userName;
-    private String password;
-    private Set<GamePlayerDTO> gamePlayers = new HashSet<>();
-    private Set<ScoreDTO> scores = new HashSet<>();
+    private String email;
 
     public PlayerDTO(Player player){
         this.id = player.getId();
-        this.userName = player.getUserName();
-        this.password = player.getPassword();
-        this.gamePlayers = player.getGamePlayers().stream().map(GamePlayerDTO::new).collect(Collectors.toSet());
-        this.scores = player.getScore().stream().map(ScoreDTO::new).collect(Collectors.toSet());
+        this.email = player.getUserName();
+
     }
 
     public long getId() {
@@ -31,35 +20,13 @@ public class PlayerDTO {
         this.id = id;
     }
 
-    public String getUserName() {
-        return userName;
+    public String getEmail() {
+        return email;
     }
 
-    public void setUserName(String userName) {
-        this.userName = userName;
+    public void setEmail(String email) {
+        this.email = email;
     }
 
-    public String getPassword() {
-        return password;
-    }
 
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public Set<GamePlayer> getGamePlayers() {
-        return gamePlayers;
-    }
-
-    public void setGamePlayers(Set<GamePlayer> gamePlayers) {
-        this.gamePlayers = gamePlayers;
-    }
-
-    public Set<Score> getScores() {
-        return scores;
-    }
-
-    public void setScores(Set<Score> scores) {
-        this.scores = scores;
-    }
 }

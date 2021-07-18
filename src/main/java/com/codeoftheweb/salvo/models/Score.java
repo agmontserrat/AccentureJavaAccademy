@@ -32,6 +32,10 @@ public class Score {
         this.finishDate = finishDate;
     }
 
+    public long getId() {
+        return id;
+    }
+
     public double getScore() {
         return score;
     }

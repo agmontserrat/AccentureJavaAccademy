@@ -51,6 +51,10 @@ public class Game {
         this.creationDate = creationDate;
     }
 
+    public Set<Score> getScores() {
+        return scores;
+    }
+
     public void AddGamePlayer(GamePlayer gamePlayer){
         gamePlayer.setGame(this);
         gamePlayers.add(gamePlayer);

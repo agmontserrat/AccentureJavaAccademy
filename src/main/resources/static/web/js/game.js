@@ -200,7 +200,7 @@ function showSelf (gamePlayerData) {
     $('#currentPlayerName').text(you);
     $('#OpponentPlayerName').text(viewer);
 
-    console.log(gamePlayerData.ships)
+    console.log(gamePlayerData)
     gamePlayerData.ships.forEach(function(ship) {
 
         let firstCellID;

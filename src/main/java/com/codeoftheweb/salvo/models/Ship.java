@@ -30,6 +30,10 @@ public class Ship {
         this.gamePlayer = gamePlayer;
     }
 
+    public long getId() {
+        return id;
+    }
+
     public String getType() {
         return type;
     }
