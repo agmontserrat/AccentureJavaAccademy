@@ -105,7 +105,7 @@ public class SalvoController {
         }
 
         // SALVO CHECKS
-        if (salvo.getLocations().size() == 0){ // Al least 1 location.
+        if (salvo.getSalvoLocations().size() == 0){ // Al least 1 location.
             return new ResponseEntity<>(Util.makeMap("error", "Salvo needs at least 1 location"), HttpStatus.UNAUTHORIZED);
         }
 

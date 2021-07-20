@@ -20,14 +20,14 @@ public class Salvo {
 
     @ElementCollection
     @Column(name="locations")
-    private List<String> locations = new ArrayList<>();
+    private List<String> salvoLocations = new ArrayList<>();
 
     public Salvo() {}
 
     public Salvo(Integer turn, GamePlayer gamePlayer, List<String> salvoLocations) {
         this.turn = turn;
         this.gamePlayer = gamePlayer;
-        this.locations = salvoLocations;
+        this.salvoLocations = salvoLocations;
     }
 
     public long getId() {
@@ -50,11 +50,11 @@ public class Salvo {
         this.gamePlayer = gamePlayer;
     }
 
-    public List<String> getLocations() {
-        return locations;
+    public List<String> getSalvoLocations() {
+        return salvoLocations;
     }
 
-    public void setLocations(List<String> locations) {
-        this.locations = locations;
+    public void setSalvoLocations(List<String> locations) {
+        this.salvoLocations = locations;
     }
 }
