@@ -20,8 +20,6 @@ public class GamePlayerDTO {
         this.id = id;
     }
 
-
-
     public PlayerDTO getPlayer() {
         return player;
     }

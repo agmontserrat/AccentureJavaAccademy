@@ -5,6 +5,7 @@ import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Entity
 public class GamePlayer {
@@ -15,7 +16,7 @@ public class GamePlayer {
     private Date creationDate;
 
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "gamePlayer")
-    private List<Ship> ships;
+    private Set<Ship> ships;
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "gamePlayer")
     private Set<Salvo> salvoes = new HashSet<>();
 
@@ -61,7 +62,7 @@ public class GamePlayer {
     }
 
 
-    public void setShips(List<Ship> ships) {
+    public void setShips(Set<Ship> ships) {
         this.ships = ships;
     }
 
@@ -73,7 +74,7 @@ public class GamePlayer {
         return salvoes;
     }
 
-    public List<Ship> getShips() {
+    public Set<Ship> getShips() {
         return ships;
     }
 
@@ -84,4 +85,6 @@ public class GamePlayer {
     public long getId() {
         return id;
     }
+
+
 }

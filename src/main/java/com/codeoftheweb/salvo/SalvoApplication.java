@@ -74,19 +74,20 @@ public class SalvoApplication {
 			gp_repository.save(gp4);
 
 			//SHIP
-			Ship s1 = new Ship("Destroyer", List.of("H2", "H3", "H4"), gp1);
-			Ship s2 = new Ship("Submarine", List.of("E1", "F1", "G1"), gp1);
-			Ship s3 = new Ship("Patrol Boat", List.of("B4", "B5"), gp1);
-			Ship s4 = new Ship("Destroyer", List.of("B5", "C5", "D5"), gp2);
-			Ship s5 = new Ship("Patrol Boat", List.of("F1", "F2"), gp2);
-			Ship s6 = new Ship("Destroyer", List.of("B5", "C5", "D5"), gp3);
-			Ship s7 = new Ship("Patrol Boat", List.of("C6", "C7"), gp3);
-			Ship s8 = new Ship("Submarine", List.of("A2", "A3", "A4"), gp4);
-			Ship s9 = new Ship("Patrol Boat", List.of("G6", "H6"), gp3);
-			s_repository.save(s1);
-			s_repository.save(s2);
-			s_repository.save(s3);
-			s_repository.save(s4);
+			Ship s1 = new Ship("destroyer", List.of("H2", "H3", "H4"), gp1);
+			Ship s2 = new Ship("submarine", List.of("E1", "F1", "G1"), gp1);
+			Ship s3 = new Ship("patrolboat", List.of("B4", "B5"), gp1);
+
+
+			Ship s4 = new Ship("destroyer", List.of("B5", "C5", "D5"), gp2);
+			Ship s5 = new Ship("patrolboat", List.of("F1", "F2"), gp2);
+
+
+			Ship s6 = new Ship("destroyer", List.of("B5", "C5", "D5"), gp3);
+			Ship s7 = new Ship("patrolboat", List.of("C6", "C7"), gp3);
+			Ship s8 = new Ship("submarine", List.of("A2", "A3", "A4"), gp4);
+			Ship s9 = new Ship("patrolboat", List.of("G6", "H6"), gp3);
+			s_repository.save(s1); s_repository.save(s2); s_repository.save(s3); s_repository.save(s4);
 			s_repository.save(s5);
 			s_repository.save(s6);
 
