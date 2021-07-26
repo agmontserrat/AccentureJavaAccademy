@@ -1,8 +1,8 @@
 package com.codeoftheweb.salvo.controllers;
 
-import com.codeoftheweb.salvo.dtos.GameViewDTO;
 import com.codeoftheweb.salvo.models.*;
 import com.codeoftheweb.salvo.repositories.*;
+import com.codeoftheweb.salvo.services.GameService;
 import com.codeoftheweb.salvo.utility.GameState;
 import com.codeoftheweb.salvo.utility.Util;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +28,8 @@ public class SalvoController {
     private ScoreRepository scoreRepository;
     @Autowired
     private ShipRepository shipRepository;
+    @Autowired
+    GameService gameService;
     @Autowired
     private PasswordEncoder passwordEncoder;
 
@@ -64,7 +66,7 @@ public class SalvoController {
             return new ResponseEntity<>(Util.makeMap("error", "Bad request"), HttpStatus.BAD_REQUEST);
         }
 
-        return new ResponseEntity<>(new GameViewDTO(gamePlayer.get()), HttpStatus.OK);
+        return new ResponseEntity<>(gameService.gameViewDTO(gamePlayer.get()), HttpStatus.OK);
     }
 
     @PostMapping("/games/players/{gamePlayerId}/ships")
@@ -77,7 +79,7 @@ public class SalvoController {
         Player authenticatedPlayer = playerRepository.findByUserName(authentication.getName());
 
         //If the authenticated player is playing the gamePlayer requested
-        if(!gamePlayer.isPresent() || gamePlayer.get().getPlayer().getId() != authenticatedPlayer.getId()){
+        if(gamePlayer.isEmpty() || gamePlayer.get().getPlayer().getId() != authenticatedPlayer.getId()){
             return new ResponseEntity<>(Util.makeMap("error","Unauthorized"), HttpStatus.UNAUTHORIZED);
         }
 
@@ -108,7 +110,7 @@ public class SalvoController {
             return new ResponseEntity<>(Util.makeMap("error","No logged player"), HttpStatus.UNAUTHORIZED);
         }
         Player authenticatedPlayer = playerRepository.findByUserName(authentication.getName());
-        if(!gamePlayer.isPresent()){
+        if(gamePlayer.isEmpty()){
             return new ResponseEntity<>(Util.makeMap("error", "The gameplayer does not exist"), HttpStatus.UNAUTHORIZED);
         }
         if(gamePlayer.get().getPlayer().getId() != authenticatedPlayer.getId()){
@@ -126,21 +128,21 @@ public class SalvoController {
             return new ResponseEntity<>(Util.makeMap("error", "You have to wait for your opponent"), HttpStatus.FORBIDDEN);
         }
 
-        if (Util.getGameState(gamePlayer.get()) == GameState.PLAY) {
+        if (gameService.getGameState(gamePlayer.get()) == GameState.PLAY) {
             salvo.setTurn(gamePlayer.get().getSalvoes().size() + 1);
             salvo.setGamePlayer(gamePlayer.get());
             salvoRepository.save(salvo);
             gamePlayer.get().getSalvoes().add(salvo);
 
-            if (Util.getGameState(gamePlayer.get()) == GameState.WON){
+            if (gameService.getGameState(gamePlayer.get()) == GameState.WON){
                 scoreRepository.save(new Score(gamePlayer.get().getGame(), gamePlayer.get().getPlayer(), 1,new Date()));
                 scoreRepository.save(new Score(opponent.get().getGame(), opponent.get().getPlayer(), 0,new Date()));
             }
-            if(Util.getGameState(gamePlayer.get()) == GameState.LOST){
+            if(gameService.getGameState(gamePlayer.get()) == GameState.LOST){
                 scoreRepository.save(new Score(gamePlayer.get().getGame(), gamePlayer.get().getPlayer(), 0,new Date()));
                 scoreRepository.save(new Score(opponent.get().getGame(), opponent.get().getPlayer(), 1,new Date()));
             }
-            if (Util.getGameState(gamePlayer.get()) == GameState.TIE){
+            if (gameService.getGameState(gamePlayer.get()) == GameState.TIE){
                 scoreRepository.save(new Score(gamePlayer.get().getGame(), gamePlayer.get().getPlayer(), 0.5,new Date()));
                 scoreRepository.save(new Score(opponent.get().getGame(), opponent.get().getPlayer(), 0.5,new Date()));
             }

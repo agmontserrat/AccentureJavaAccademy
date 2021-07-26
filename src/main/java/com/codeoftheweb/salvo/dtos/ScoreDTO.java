@@ -13,6 +13,9 @@ public class ScoreDTO {
     private Optional<Double> score;
     private Optional<Date> finishDate;
 
+    public ScoreDTO() {
+    }
+
     public ScoreDTO(GamePlayer gp){
         if (gp.getPlayer().getScore(gp.getGame()).isPresent()) {
             this.player = Optional.of(gp.getPlayer().getId());

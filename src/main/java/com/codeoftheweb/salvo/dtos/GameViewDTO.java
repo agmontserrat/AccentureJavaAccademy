@@ -1,14 +1,10 @@
 package com.codeoftheweb.salvo.dtos;
 
-import com.codeoftheweb.salvo.models.GamePlayer;
 import com.codeoftheweb.salvo.utility.GameState;
-import com.codeoftheweb.salvo.utility.Util;
 
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
-
-import static java.util.stream.Collectors.toSet;
 
 public class GameViewDTO {
     private long id;
@@ -19,14 +15,17 @@ public class GameViewDTO {
     private Set<SalvoDTO> salvoes = new HashSet<>();
     private HitsDTO hits;
 
-    public GameViewDTO(GamePlayer gamePlayer) {
-        this.id = gamePlayer.getGame().getId();
-        this.created = gamePlayer.getGame().getCreationDate();
-        this.gameState = Util.getGameState(gamePlayer);
-        this.gamePlayers = gamePlayer.getGame().getGamePlayers().stream().map(GamePlayerDTO::new).collect(toSet());
-        this.ships = gamePlayer.getShips().stream().map(ShipDTO::new).collect(toSet());
-        this.salvoes = gamePlayer.getGame().getGamePlayers().stream().flatMap(gp -> gp.getSalvoes().stream().map(SalvoDTO::new)).collect(toSet());
-        this.hits = new HitsDTO(gamePlayer);
+    public GameViewDTO() {
+    }
+
+    public GameViewDTO(long id, Date created, GameState gameState, Set<GamePlayerDTO> gamePlayers, Set<ShipDTO> ships, Set<SalvoDTO> salvoes, HitsDTO hits) {
+        this.id = id;
+        this.created = created;
+        this.gameState = gameState;
+        this.gamePlayers = gamePlayers;
+        this.ships = ships;
+        this.salvoes = salvoes;
+        this.hits = hits;
     }
 
     public long getId() {

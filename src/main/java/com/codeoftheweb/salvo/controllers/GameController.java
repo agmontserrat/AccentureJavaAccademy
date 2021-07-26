@@ -1,7 +1,7 @@
 package com.codeoftheweb.salvo.controllers;
 
-import com.codeoftheweb.salvo.dtos.GameDTO;
 import com.codeoftheweb.salvo.dtos.PlayerDTO;
+import com.codeoftheweb.salvo.services.GameService;
 import com.codeoftheweb.salvo.utility.Util;
 import com.codeoftheweb.salvo.models.Game;
 import com.codeoftheweb.salvo.models.GamePlayer;
@@ -16,7 +16,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -32,15 +31,18 @@ public class GameController {
     private GamePlayerRepository gp_repo;
     @Autowired
     private PlayerRepository playerRepository;
+    @Autowired
+    GameService gameService;
 
     @GetMapping("/games")
     public ResponseEntity<Map<String, Object>> getGames(Authentication authentication){
         Map<String, Object> dto = new LinkedHashMap<>();
         if (Util.isGuest(authentication))
             dto.put("player", "Guest");
-        else
+        else {
             dto.put("player", new PlayerDTO(playerRepository.findByUserName(authentication.getName())));
-        dto.put("games",g_repo.findAll().stream().map(GameDTO::new).collect(toSet()));
+        }
+        dto.put("games",g_repo.findAll().stream().map(game -> gameService.gameDTO(game)).collect(toSet()));
         return new ResponseEntity<>(dto, HttpStatus.ACCEPTED);
     }
 

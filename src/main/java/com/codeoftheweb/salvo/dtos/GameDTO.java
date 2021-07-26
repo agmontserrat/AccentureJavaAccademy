@@ -1,24 +1,24 @@
 package com.codeoftheweb.salvo.dtos;
 
-import com.codeoftheweb.salvo.models.Game;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public class GameDTO {
     private long id;
     private Date created;
-    private Set<GamePlayerDTO> gamePlayers = new HashSet<>();
-    private Set<ScoreDTO> scores = new HashSet<>();
+    private Set<GamePlayerDTO> gamePlayers;
+    private Set<ScoreDTO> scores;
 
-    public GameDTO(Game game) {
-        this.id = game.getId();
-        this.created = game.getCreationDate();
-        this.gamePlayers = game.getGamePlayers().stream().map(GamePlayerDTO::new).collect(Collectors.toSet());
-        this.scores = game.getGamePlayers().stream().map(ScoreDTO::new).collect(Collectors.toSet());
+    public GameDTO(){
+
     }
 
+    public GameDTO(long id, Date created, Set<GamePlayerDTO> gamePlayers, Set<ScoreDTO> scores) {
+        this.id = id;
+        this.created = created;
+        this.gamePlayers = gamePlayers;
+        this.scores = scores;
+    }
 
     public long getId() {
         return id;
