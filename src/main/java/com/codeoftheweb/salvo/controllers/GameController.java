@@ -54,10 +54,10 @@ public class GameController {
             return new ResponseEntity<>(Util.makeMap("error","No logged player"), HttpStatus.UNAUTHORIZED);
 
         Player authenticatedPlayer = playerRepository.findByUserName(authentication.getName());
-        Game game = new Game();
-        GamePlayer gamePlayer = new GamePlayer(new Date(),game, authenticatedPlayer);
-
+        Date date = new Date();
+        Game game = new Game(date);
         g_repo.save(game);
+        GamePlayer gamePlayer = new GamePlayer(date,game, authenticatedPlayer);
         gp_repo.save(gamePlayer);
         return new ResponseEntity<>(Util.makeMap("gpid", gamePlayer.getId()), HttpStatus.CREATED);
     }

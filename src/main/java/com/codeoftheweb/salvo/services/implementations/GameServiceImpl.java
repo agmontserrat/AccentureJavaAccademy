@@ -5,7 +5,6 @@ import com.codeoftheweb.salvo.models.*;
 import com.codeoftheweb.salvo.services.GameService;
 import com.codeoftheweb.salvo.utility.GameState;
 import com.codeoftheweb.salvo.utility.Util;
-import org.aspectj.weaver.patterns.ScopeWithTypeVariables;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -58,16 +57,19 @@ public class GameServiceImpl implements GameService {
     @Override
     public GameViewDTO gameViewDTO(GamePlayer gamePlayer) {
         HitsDTO hitsDTO = new HitsDTO();
-        if (Util.getOpponent(gamePlayer).isPresent())
+        if (Util.getOpponent(gamePlayer).isPresent()) {
             hitsDTO.setSelf(Util.getOpponent(gamePlayer).get().getSalvoes().stream().map(this::getHits).collect(Collectors.toList()));
-        else
+            hitsDTO.setOpponent(gamePlayer.getSalvoes().stream().map(this::getHits).collect(Collectors.toList()));
+        }
+        else {
             hitsDTO.setSelf(new ArrayList<>());
-        hitsDTO.setOpponent(gamePlayer.getSalvoes().stream().map(this::getHits).collect(Collectors.toList()));
+            hitsDTO.setOpponent(new ArrayList<>());
+        }
 
 
 
         GameViewDTO gameViewDTO = new GameViewDTO();
-
+        gameViewDTO.setId(gamePlayer.getGame().getId());
         gameViewDTO.setCreated(gamePlayer.getGame().getCreationDate());
         gameViewDTO.setGameState(getGameState(gamePlayer));
         gameViewDTO.setGamePlayers(gamePlayer.getGame().getGamePlayers().stream().map(GamePlayerDTO::new).collect(toSet()));
